@@ -1,0 +1,24 @@
+{
+  "name": "@nycopportunity/pttrn-plugin-properties",
+  "version": "0.0.0",
+  "description": "A plugin command script for the https://github.com/nycopportunity/patterns-cli that will compile JSON tokens into CSS Custom Properties.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nycopportunity/patterns-plugin-properties.git"
+  },
+  "author": "NYC Opportunity <products@nycopportunity.nyc.gov>",
+  "license": "GPL-3.0+",
+  "bugs": {
+    "url": "https://github.com/nycopportunity/patterns-plugin-properties/issues"
+  },
+  "homepage": "https://github.com/nycopportunity/patterns-plugin-properties#readme",
+  "main": "index.js",
+  "scripts": {
+    "version": "git add .",
+    "prepublishOnly": "git push && git push --tags"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.2",
+    "css-vars-from-json": "^1.1.0"
+  }
+}
