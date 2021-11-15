@@ -1,6 +1,6 @@
 # Patterns CLI CSS Properties Plugin
 
-A plugin command script for the [Patterns CLI](https://github.com/nycopportunity/patterns-cli) that will compile a JSON object containing design tokens into CSS Custom Properties using the [css-vars-from-json](https://github.com/TimoBechtel/css-vars-from-json) package.
+A plugin command script for the [Patterns CLI](https://github.com/nycopportunity/patterns-cli) that will compile an array of JSON objects containing design tokens into CSS Custom Properties using the [css-vars-from-json](https://github.com/TimoBechtel/css-vars-from-json) package.
 
 ## Usage
 
@@ -37,13 +37,12 @@ The **dist/css/tokens.css** will contain a `:root { ... }` declaration with all 
 
 ## Config
 
-An config file should be added to the `/config` directory with the following options:
+A config file named **properties.js** should be added to the `/config` directory that exports an array of objects with CSS Custom property settings. Each object should include the the following options:
 
-Option   | Description
----------|-
-`dist`   | The output file for the CSS Custom Properties file.
-`delete` | This will prevent specific JSON object keys from being exported into properties
-`...`    | Individual tokens can be added after these options or they can be imported from the local **./config/tokens.js** file used by the [`tokens` command](https://github.com/CityOfNewYork/patterns-cli#tokens).
+Option       | Type     | Description
+-------------|----------|-
+`dist`       | *String* | The output file for the CSS Custom Properties file.
+`properties` | *Object* | The CSS Custom properties object. Individual tokens can be added or they can be imported from the local **./config/tokens.js** file used by the [`tokens` command](https://github.com/CityOfNewYork/patterns-cli#tokens).
 
 **Config Sample**
 
@@ -51,9 +50,27 @@ Option   | Description
 const resolve = require(`${process.env.PWD}/node_modules/@nycopportunity/pttrn/bin/util/resolve`);
 const tokens = resolve('config/tokens', true, false); // The resolve utility prevents the tokens file from being cached
 
-module.exports = {
-  'dist': 'dist/css/tokens.css',
-  'delete': ['dist', 'output', 'prefix'],
-  ...tokens
-};
+let light = tokens['color-modes']['light'];
+let dark = tokens['color-modes']['default'];
+
+module.exports = [
+  {
+    'dist': 'dist/styles/tokens.css',
+    'properties': {
+      ...tokens
+    }
+  },
+  {
+    'dist': 'dist/styles/tokens-default.css',
+    'properties': {
+      ...dark
+    }
+  },
+  {
+    'dist': 'dist/styles/tokens-light.css',
+    'properties': {
+      ...light
+    }
+  }
+];
 ```

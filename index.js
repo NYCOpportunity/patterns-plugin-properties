@@ -12,12 +12,6 @@ const chokidar = require('chokidar');
 const cssVars = require('css-vars-from-json');
 
 /**
- * Config file for this script
- */
-
-const config = require(`${process.env.PWD}/config/properties`);
-
-/**
  * @pttrn Dependencies
  */
 
@@ -28,22 +22,26 @@ const cnsl = require(`${pttrn}/bin/util/console`);
 const resolve = require(`${pttrn}/bin/util/resolve`);
 
 /**
- * Constants
+ * Get options for the command.
+ *
+ * @return  {Object}  The options object.
  */
-
-const SRC = config;
-const DIST = config.dist;
-const GLOBS = [
-  `${process.env.PWD}/config/properties.js`,
-  `${process.env.PWD}/config/tokens.js`
-];
+const options = function() {
+  return {
+    modules: resolve('config/properties', true, false),
+    globs: [
+      `${process.env.PWD}/config/properties.js`,
+      `${process.env.PWD}/config/tokens.js`
+    ]
+  }
+};
 
 /**
  * Our Chokidar Watcher
  *
  * @source https://github.com/paulmillr/chokidar
  */
-const watcher = chokidar.watch(GLOBS, {
+const watcher = chokidar.watch(options().globs, {
   usePolling: false,
   awaitWriteFinish: {
     stabilityThreshold: 750
@@ -58,9 +56,9 @@ const watcher = chokidar.watch(GLOBS, {
  *
  * @return  {Undefined}        The result of fs.writeFileSync()
  */
-const write = async (file, data) => {
+const write = async (mod, data) => {
   try {
-    let dist = DIST;
+    let dist = mod.dist;
 
     if (!fs.existsSync(path.dirname(dist))) {
       fs.mkdirSync(path.dirname(dist), {recursive: true});
@@ -79,22 +77,12 @@ const write = async (file, data) => {
 /**
  * A sample file read and replace method
  *
- * @param   {String}  file  Path to the file
+ * @param   {String}  mod  Module containing the CSS Properties
  *
- * @return  {String}        File contents
+ * @return  {String}       File contents
  */
-const replace = async () => {
-  const properties = resolve('config/properties', true, false);
-
-  if (properties['delete']) {
-    for (let i = 0; i < properties['delete'].length; i++) {
-      delete properties[properties['delete'][i]];
-    }
-
-    delete properties['delete'];
-  }
-
-  return `:root{ ${cssVars(properties)} }`;
+const replace = async mod => {
+  return `:root{ ${cssVars(mod['properties'])} }`;
 };
 
 /**
@@ -104,26 +92,16 @@ const replace = async () => {
  *
  * @return  {String}        Transformed data
  */
-const main = async (file) => {
+const main = async mod => {
   try {
-    let data = await replace(); // Do something with the file data here
+    let data = await replace(mod); // Do something with the file data here
 
-    await write(file, data);
+    await write(mod, data);
 
     return data;
   } catch (err) {
     cnsl.error(`Failed (main): ${err.stack}`);
   }
-};
-
-/**
- * Read a specific file, if it is a directory read all of the files in it,
- * then, perform the main task on the file.
- *
- * @param  {String}  file  A single file or directory to recursively walk
- */
-const walk = async (file) => {
-  await main(file);
 };
 
 /**
@@ -139,20 +117,22 @@ const run = async () => {
       watcher.on('change', async changed => {
         cnsl.watching(`Detected change on ${alerts.str.path(changed)}`);
 
-        await main(changed);
+        let opts = options();
+
+        for (let i = 0; i < opts.modules.length; i++) {
+          await main(opts.modules[i]);
+        }
       });
 
-      cnsl.watching(`Properties watching ${alerts.str.ext(GLOBS.join(', '))}`);
+      cnsl.watching(`Properties watching ${alerts.str.ext(options().globs.join(', '))}`);
     } catch (err) {
       cnsl.error(`Failed (run): ${err.stack}`);
     }
   } else {
-    let file = SRC;
+    let opts = options();
 
-    if (file) {
-      await main(file);
-    } else {
-      cnsl.error(`Failed (run): A file needs to be passed as an argument or a directory with files needs to be present if not using the ${alerts.str.string('--watch')} flag.`);
+    for (let i = 0; i < opts.modules.length; i++) {
+      await main(opts.modules[i]);
     }
 
     process.exit(); // One-off commands must exit
