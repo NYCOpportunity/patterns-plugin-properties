@@ -82,7 +82,9 @@ const write = async (mod, data) => {
  * @return  {String}       File contents
  */
 const replace = async mod => {
-  return `:root{ ${cssVars(mod['properties'])} }`;
+  let ruleset = (mod.hasOwnProperty('ruleset')) ? mod['ruleset'] : ':root';
+
+  return `${ruleset} { ${cssVars(mod['properties'])} }`;
 };
 
 /**

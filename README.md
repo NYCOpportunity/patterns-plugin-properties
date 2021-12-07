@@ -1,6 +1,6 @@
 # Patterns CLI CSS Properties Plugin
 
-A plugin command script for the [Patterns CLI](https://github.com/nycopportunity/patterns-cli) that will compile an array of JSON objects containing design tokens into CSS Custom Properties using the [css-vars-from-json](https://github.com/TimoBechtel/css-vars-from-json) package.
+A plugin command script for the [Patterns CLI](https://github.com/nycopportunity/patterns-cli) that will compile an array of JSON objects containing design tokens into [CSS Custom Properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties) using the [css-vars-from-json](https://github.com/TimoBechtel/css-vars-from-json) package.
 
 ## Usage
 
@@ -42,6 +42,7 @@ A config file named **properties.js** should be added to the `/config` directory
 Option       | Type     | Description
 -------------|----------|-
 `dist`       | *String* | The output file for the CSS Custom Properties file.
+`ruleset`    | *String* | The rule-set properties will be attached to. Defaults to [`:root`](https://developer.mozilla.org/en-US/docs/Web/CSS/:root). May include multiple classes such as `:root, .dark`. This can be used to narrow the limit the scope of CSS Custom Properties.
 `properties` | *Object* | The CSS Custom properties object. Individual tokens can be added or they can be imported from the local **./config/tokens.js** file used by the [`tokens` command](https://github.com/CityOfNewYork/patterns-cli#tokens).
 
 **Config Sample**
@@ -62,12 +63,14 @@ module.exports = [
   },
   {
     'dist': 'dist/styles/tokens-default.css',
+    'ruleset': ':root, .light',
     'properties': {
       ...dark
     }
   },
   {
-    'dist': 'dist/styles/tokens-light.css',
+    'dist': 'dist/styles/tokens-dark.css',
+    'ruleset': '.dark',
     'properties': {
       ...light
     }
